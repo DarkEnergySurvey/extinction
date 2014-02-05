@@ -1,0 +1,25 @@
+A few c files and the Makefile had to be modified to make sure that it
+compiled on OS X 10.8 and Linux x86_64. Here is a description of the
+changes. You can see the file: CodeC.patch for the specfic changes. 
+
+Felipe Menanteau, NCSA, Nov 2013.
+
+- The code was debugged with gdb
+
+1) In subs_common_string.h comment out the definition for 'getline'
+2) In subs_inoutput.h increase from 80 to 256 the variables
+MAX_FILE_NAME_LEN  and  IO_FORTRAN_FL 
+3) In subs_fits.c change pLabel_temp[8] to pLabel_temp[9] to avoid
+Abort
+4) In Makefile add CFLAGS =  -O2 -D__OSX -arch i386 -arch x86_64
+-DLITTLE_ENDIAN to compile on OSX.
+
+- Finally create a patch for all of the chages
+%> diff -rupN CodeC CodeC_FMupdate > CodeC.patch 
+
+- Apply the patch
+%> cd CodeC
+%> patch --dry-run -b -p 1 -id   # Dry run
+%> patch -b -p 1 -id             # For real
+%> mv CodeC CodeC_DESDMpatched   # change name
+%> tar cvf CodeC_DESDMpatched.tar CodeC_DESDMpatched # tar up
