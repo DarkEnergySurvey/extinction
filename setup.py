@@ -19,6 +19,8 @@ def copy_update(dir1,dir2):
     print "# Copying %s --> %s" % (dir1,dir2)
     f1 = os.listdir(dir1)
     for f in f1:
+        if f == '.svn':
+            continue
         path1 = os.path.join(dir1,f)
         path2 = os.path.join(dir2,f)
         if not os.path.exists(path2):
