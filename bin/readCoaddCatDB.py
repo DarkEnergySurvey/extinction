@@ -181,7 +181,10 @@ if __name__ == '__main__':
     # Make the list of files
     for tilename in sorted(p.tilenames):
         t1 = time.time()
-        print "# TILE:%s" % tilename
+        now = time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime())
+        print "# --------------------------------------"
+        print "# Starting TILE:%s " % tilename
+        print "# %s " % now
         p.getRADEC_coaddtile_SQL(tilename)
         p.getXCorr()
         print "# TILE Total time: %s" % elapsed_time(t1)
