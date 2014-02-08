@@ -211,12 +211,13 @@ def flux(xsr,ys,yr):
 
 def get_EBV(ra,dec,tmp_path='/tmp',units='degrees'):
 
-    """ function recieves a coordinate pair, RA and DEC
-        from the caller, converts to galactic coords and runs the
-        dust_getval code, installed in the path. Returns an extinction
-        correction in magnitudes and an error object (a list of
-        strings) of possible reported problems with the region of the
-        sky.
+    """
+    function recieves a coordinate pair, RA and DEC
+    from the caller, converts to galactic coords and runs the
+    dust_getval code, installed in the path. Returns an extinction
+    correction in magnitudes and an error object (a list of
+    strings) of possible reported problems with the region of the
+    sky.
     """
     if units == 'hours':
         ra = ra/15.0
@@ -226,7 +227,6 @@ def get_EBV(ra,dec,tmp_path='/tmp',units='degrees'):
         sys.exit("Exiting -- dust_getval not found")
 
     # Set up location of temporary paths
-    coords_eq = os.path.join(tmp_path,"coords_radec.dat")
     coords_lb = os.path.join(tmp_path,"coords_galac.dat")
     eBVdata   = os.path.join(tmp_path,"eBV.dat")
 
@@ -252,7 +252,8 @@ def get_EBV(ra,dec,tmp_path='/tmp',units='degrees'):
     # Get the array of eBV values for each coordinate position
     eBV    = tableio.get_data(eBVdata,cols=(2,))
     # Remove all of the temporary files
-    os.system("rm %s %s %s" % (coords_eq, coords_lb, eBVdata))
+    os.remove(coords_lb)
+    os.remove(eBVdata)
     return eBV 
 
 
@@ -297,7 +298,7 @@ def Xcorrection(ra,dec,filters):
     numpy arrays of ra and dec in degress and a set of filter/filters
     """
     
-    print "# Computing e(B-V) for %s (ra,dec) positions" % len(ra)
+    print "# Computing e(B-V) using SFD98 for %s (ra,dec) positions" % len(ra)
     eBV = get_EBV(ra,dec)
     print "# Done..."
 
@@ -309,11 +310,11 @@ def Xcorrection(ra,dec,filters):
     XCorrErr = {}
     
     for filter in filters:
-        XCorr[filter]      = filterFactor(filter) * eBV
-        XCorrError[filter] = XCorr[filter]*0.16
+        XCorr[filter]    = filterFactor(filter) * eBV
+        XCorrErr[filter] = XCorr[filter]*0.16
         # spit out some info
-    print "# Dust Correction %s, mean, min, max:  %.4f %.4f, %.4f mags\n" % (filter,
-                                                                             XCorr[filter].mean(),
-                                                                             XCorr[filter].min(),
-                                                                             XCorr[filter].max())
-    return Xcorr, XcorrError
+        print "# Dust Correction %s, mean, min, max:  %.4f %.4f, %.4f mags" % (filter,
+                                                                               XCorr[filter].mean(),
+                                                                               XCorr[filter].min(),
+                                                                               XCorr[filter].max())
+    return XCorr, XCorrErr
