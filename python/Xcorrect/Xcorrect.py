@@ -211,6 +211,8 @@ def flux(xsr,ys,yr):
 
 def get_EBV(ra,dec,tmp_path='/tmp',units='degrees'):
 
+    import types
+
     """
     function recieves a coordinate pair, RA and DEC
     from the caller, converts to galactic coords and runs the
@@ -231,7 +233,9 @@ def get_EBV(ra,dec,tmp_path='/tmp',units='degrees'):
     eBVdata   = os.path.join(tmp_path,"eBV.dat")
 
     # Check if they are floats
-    if type(ra) == type(1.0) or type(dec) == type(1.0):
+    #if type(filters) is types.ListType or type(filters) is types.TupleType:
+
+    if type(ra) == types.FloatType or type(dec) == types.FloatType:
         ra  = numpy.asarray(ra)
         dec = numpy.asarray(dec)
 
@@ -254,8 +258,7 @@ def get_EBV(ra,dec,tmp_path='/tmp',units='degrees'):
     # Remove all of the temporary files
     os.remove(coords_lb)
     os.remove(eBVdata)
-    return eBV 
-
+    return eBV
 
 # Check if executable is in path of user
 def inpath(program,verb=None):
@@ -267,14 +270,23 @@ def inpath(program,verb=None):
     if verb: print "# program: %s NOT found in user's path " % program
     return 0
 
+# Format time
+def elapsed_time(t1,verb=False):
+    import time
+    t2    = time.time()
+    stime = "%dm %2.2fs" % ( int( (t2-t1)/60.), (t2-t1) - 60*int((t2-t1)/60.))
+    if verb:
+        print >>sys.stderr,"Elapsed time: %s" % stime
+    return stime
 
 def filterFactor(filter):
 
-    """ This function defines a dictionary A(Lambda)/E(B-V) values for
-    a flat sed for Rv=3.10"""
+    """
+    This function defines a dictionary A(Lambda)/E(B-V) values for
+    a flat sed for Rv=3.10
+    """
 
     ffactors = {
-
         "g_DECam": 3.704722,
         "r_DECam": 2.610357,
         "i_DECam": 1.947345, 
@@ -285,22 +297,24 @@ def filterFactor(filter):
         "r_MOSAICII": 2.78438802442,
         "i_MOSAICII": 2.06519949822, 
         "z_MOSAICII": 1.39714057191,
-
 	}
 
     return ffactors[filter]
 
 
 def Xcorrection(ra,dec,filters):
-    
+
+    import time
+
     """
     Gets e(B-V) for every source in the detection catalog for
     numpy arrays of ra and dec in degress and a set of filter/filters
     """
-    
+
+    t0 = time.time()
     print "# Computing e(B-V) using SFD98 for %s (ra,dec) positions" % len(ra)
     eBV = get_EBV(ra,dec)
-    print "# Done..."
+    print "# Done in:  %s" % elapsed_time(t0)
 
     # Check if list of filters
     #if type(filters) is types.ListType or type(filters) is types.TupleType:
@@ -318,3 +332,4 @@ def Xcorrection(ra,dec,filters):
                                                                                XCorr[filter].min(),
                                                                                XCorr[filter].max())
     return XCorr, XCorrErr
+
