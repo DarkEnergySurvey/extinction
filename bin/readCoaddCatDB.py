@@ -11,11 +11,9 @@ DECam_filters = ('g_DECam','r_DECam','i_DECam','z_DECam','y_DECam')
 class coadd:
 
     def __init__(self,coadd_version='SVA1_COADD',
-                 tilename   = None,
                  db_section = "db-desoper",
                  outdir = "color_tiles"):
         
-        self.tilename      = tilename
         self.coadd_version = coadd_version
         self.outdir        = outdir
 
@@ -58,11 +56,15 @@ class coadd:
         
         print "# Building the list of files to be used from DESAR/SQL queries"
         cur = self.dbh.cursor()
+        self.tilename = tilename
+
 
         # ---------------------------------------------------------        
         # Another way suggested by Todd via the catalogs table
         #queryitems = ["o.ra","o.dec",
         #              "o.imageid_g", "o.imageid_r", "o.imageid_i", "o.imageid_z", "o.imageid_Y","c.id"]
+        #queryitems = ["co.coadd_objects_id","co.ra", "co.dec"]
+        #querylist = ",".join(queryitems)
         #query_alt = """
         #select %s
         #from catalog c, coadd_objects co
@@ -73,7 +75,7 @@ class coadd:
         #      (c.id = co.catalogid_i and c.band='i') OR
         #      (c.id = co.catalogid_r and c.band='r') OR
         #      (c.id = co.catalogid_z and c.band='z') OR
-        #     (c.id = co.catalogid_y and c.band='Y') )""" % ( querylist, tilename, self.run_names[tilename])
+        #      (c.id = co.catalogid_y and c.band='Y') )""" % ( querylist, tilename, self.run_names[tilename])
         # ---------------------------------------------------------        
 
         # The reason why this query is so long is because the
@@ -86,7 +88,7 @@ class coadd:
         queryitems = ["o.coadd_objects_id","o.ra", "o.dec"]
         querylist = ",".join(queryitems)
         query = """
-        select %s
+        select distinct %s
         from coadd c, coadd_objects o
         where c.tilename = '%s'
           and c.run = '%s'
@@ -100,6 +102,7 @@ class coadd:
         print "# Will execute the SQL query:\n********%s\n********" % query
         t0 = time.time()
         # Do the query
+        cur.arraysize = 1000
         cur.execute(query) 
         # Get them all at once
         list_of_tuples = cur.fetchall()
@@ -110,7 +113,6 @@ class coadd:
         self.objectsDEC = numpy.array(list(dec))
         print "# SQL query done in:  %s" % elapsed_time(t0)
 
-
         
     def getXCorr(self):
 
@@ -118,7 +120,43 @@ class coadd:
         Get the dust correction for current object in self.objectsRA, and seld.objectsDEC
         Return ndarray Xc[filter], Xc_err[filter]
         """
-        Xc, Xc_err = X.Xcorrection(self.objectsRA,self.objectsDEC,DECam_filters)
+        (self.Xc,self.Xc_err,self.eBV,self.l,self.b) = X.Xcorrection(self.objectsRA,self.objectsDEC,DECam_filters)
+
+    def InsertXCorr(self,table='felipe.coadd_objects_xcorr'):
+
+        dbh = self.dbh 
+
+        columns = ('COADD_OBJECTS_ID',
+                   'XCORR_SFD98_G',
+                   'XCORR_SFD98_R',
+                   'XCORR_SFD98_I',
+                   'XCORR_SFD98_Z',
+                   'XCORR_SFD98_Y',
+                   'eBV',
+                   'L',
+                   'B',
+                   'TILENAME')
+
+        NID  = len(self.objectsID)
+
+        rows = zip( self.objectsID.tolist(),
+                    self.Xc['g_DECam'],
+                    self.Xc['r_DECam'],
+                    self.Xc['i_DECam'],
+                    self.Xc['z_DECam'],
+                    self.Xc['y_DECam'],
+                    self.eBV,
+                    self.l,
+                    self.b,
+                    [self.tilename]*NID) 
+        dbh.insert_many(table, columns, rows) 
+        dbh.commit()
+        #print columns
+        #print self.tilename
+        #for i in range(10):
+        #    print values[i]
+
+        
 
 
 # Format time
@@ -174,20 +212,32 @@ if __name__ == '__main__':
         coadd_version = 'SVA1_COADD'
 
     # initialize the class and collect files
+    print "# Initializing Tilenames"
     p = coadd(coadd_version=coadd_version)
-    #p.getRADEC_coaddtile_SQL(tilename)
-    #p.getXCorr()
+    p.getRADEC_coaddtile_SQL(tilename)
+    p.getXCorr()
+    p.InsertXCorr()
+    print "# Total time: %s" % elapsed_time(t0)
+    sys.exit()
 
+
+    # Do them all
+    ntiles  = len(p.tilenames)
+    counter = 1
     # Make the list of files
     for tilename in sorted(p.tilenames):
         t1 = time.time()
         now = time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime())
         print "# --------------------------------------"
-        print "# Starting TILE:%s " % tilename
+        print "# Starting TILE:%s (%s/%s)" % (tilename,counter,ntiles)
         print "# %s " % now
         p.getRADEC_coaddtile_SQL(tilename)
         p.getXCorr()
+        p.InsertXCorr()
+
+        
         print "# TILE Total time: %s" % elapsed_time(t1)
+        counter = counter + 1
 
     print "# Total time: %s" % elapsed_time(t0)
 
