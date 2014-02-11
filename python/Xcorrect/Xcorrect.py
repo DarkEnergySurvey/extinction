@@ -232,9 +232,7 @@ def get_EBV(ra,dec,tmp_path='/tmp',units='degrees'):
     coords_lb = os.path.join(tmp_path,"coords_galac.dat")
     eBVdata   = os.path.join(tmp_path,"eBV.dat")
 
-    # Check if they are floats
-    #if type(filters) is types.ListType or type(filters) is types.TupleType:
-
+    # Check if they are floats and make then ndarrays
     if type(ra) == types.FloatType or type(dec) == types.FloatType:
         ra  = numpy.asarray(ra)
         dec = numpy.asarray(dec)
@@ -258,7 +256,9 @@ def get_EBV(ra,dec,tmp_path='/tmp',units='degrees'):
     # Remove all of the temporary files
     os.remove(coords_lb)
     os.remove(eBVdata)
-    return eBV
+
+    # Also return l,b
+    return eBV,l,b
 
 # Check if executable is in path of user
 def inpath(program,verb=None):
@@ -313,7 +313,7 @@ def Xcorrection(ra,dec,filters):
 
     t0 = time.time()
     print "# Computing e(B-V) using SFD98 for %s (ra,dec) positions" % len(ra)
-    eBV = get_EBV(ra,dec)
+    (eBV,l,b) = get_EBV(ra,dec)
     print "# Done in:  %s" % elapsed_time(t0)
 
     # Check if list of filters
@@ -331,5 +331,5 @@ def Xcorrection(ra,dec,filters):
                                                                                XCorr[filter].mean(),
                                                                                XCorr[filter].min(),
                                                                                XCorr[filter].max())
-    return XCorr, XCorrErr
+    return XCorr, XCorrErr, eBV, l, b
 
