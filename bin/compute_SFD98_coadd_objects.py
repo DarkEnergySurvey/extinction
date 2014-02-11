@@ -124,8 +124,8 @@ class coadd:
 
     def InsertXCorr(self,table='felipe.coadd_objects_xcorr'):
 
+        t0 = time.time()
         dbh = self.dbh 
-
         columns = ('COADD_OBJECTS_ID',
                    'XCORR_SFD98_G',
                    'XCORR_SFD98_R',
@@ -138,7 +138,6 @@ class coadd:
                    'TILENAME')
 
         NID  = len(self.objectsID)
-
         rows = zip( self.objectsID.tolist(),
                     self.Xc['g_DECam'],
                     self.Xc['r_DECam'],
@@ -149,15 +148,13 @@ class coadd:
                     self.l,
                     self.b,
                     [self.tilename]*NID) 
+        print "# Will insert columns to: %s" % table
+        for c in columns:
+            print "# \t %s " % c
+
         dbh.insert_many(table, columns, rows) 
         dbh.commit()
-        #print columns
-        #print self.tilename
-        #for i in range(10):
-        #    print values[i]
-
-        
-
+        print "# Insert Done, time: %s" % elapsed_time(t0)
 
 # Format time
 def elapsed_time(t1,verb=False):
@@ -170,28 +167,29 @@ def elapsed_time(t1,verb=False):
 
 def cmdline():
 
-    from optparse import OptionParser
+    import argparse
+    parser = argparse.ArgumentParser(description="Computes SFD98 Galactic extinction for COADD_OBJECTS, one tile at a time")
 
-    # Read in the command line options
-    USAGE = "\n"
-    USAGE = USAGE + "\t %prog <tilename> [COADD-VERSION]\n" 
-    USAGE = USAGE + "\t i.e.: \n"
-    USAGE = USAGE + "\t %prog DES0056-4831 [SVA1_COADD] \n"
+    # The positional arguments
+    #parser.add_argument("fileName", help="Fits file to process")
+    #parser.add_argument("outdir",   help="Path to output files [will preserve same name]")
 
-    # color_tile.py DES0056-4831
+    # The optional arguments
+    parser.add_argument("--TileName", action="store", default=None,
+                        help="TileName to compute")
+    
+    parser.add_argument("--allTiles", action="store_true", default=False,
+                        help="Compute Extiction correction for all tilename at once [default=False]")
 
-    parser = OptionParser(usage=USAGE)
+    parser.add_argument("--CoaddVersion", action="store", default="SVA1_COADD",
+                        help="DESAR COADD_VERSION to use [default=SVA1_COADD]")
 
-    parser.add_option("--outdir",
-                      dest="outdir", default='./color_tiles',
-                      help="Output Directory to put files in")
+    args = parser.parse_args()
 
-    (options, args) = parser.parse_args()
+    if args.TileName:
+        args.allTiles = False
 
-    if len(args) < 1:
-        parser.error("\n\tERROR:incorrect number of arguments")        
-
-    return options,args
+    return args
 
 
 ######################
@@ -204,42 +202,38 @@ if __name__ == '__main__':
     tstart   = time.time()
 
     # Get the command line options
-    opt,arg = cmdline()
-    tilename = arg[0]
-    try:
-        coadd_version = arg[1] 
-    except:
-        coadd_version = 'SVA1_COADD'
+    args = cmdline()
 
     # initialize the class and collect files
     print "# Initializing Tilenames"
-    p = coadd(coadd_version=coadd_version)
-    p.getRADEC_coaddtile_SQL(tilename)
-    p.getXCorr()
-    p.InsertXCorr()
-    print "# Total time: %s" % elapsed_time(t0)
-    sys.exit()
+    p = coadd(coadd_version=args.CoaddVersion)
 
-
-    # Do them all
-    ntiles  = len(p.tilenames)
-    counter = 1
-    # Make the list of files
-    for tilename in sorted(p.tilenames):
-        t1 = time.time()
-        now = time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime())
-        print "# --------------------------------------"
-        print "# Starting TILE:%s (%s/%s)" % (tilename,counter,ntiles)
-        print "# %s " % now
-        p.getRADEC_coaddtile_SQL(tilename)
+    # Do only one tile
+    if args.TileName:
+        p.getRADEC_coaddtile_SQL(args.TileName)
         p.getXCorr()
         p.InsertXCorr()
+        print "# Total time: %s" % elapsed_time(t0)
+        sys.exit()
 
-        
-        print "# TILE Total time: %s" % elapsed_time(t1)
-        counter = counter + 1
+    # Do them all
+    else:
+        ntiles  = len(p.tilenames)
+        counter = 1
+        # Make the list of files
+        for tilename in sorted(p.tilenames):
+            t1 = time.time()
+            now = time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime())
+            print "# --------------------------------------"
+            print "# Starting TILE:%s (%s/%s)" % (tilename,counter,ntiles)
+            print "# %s " % now
+            p.getRADEC_coaddtile_SQL(tilename)
+            p.getXCorr()
+            p.InsertXCorr()
+            print "# TILE Total time: %s" % elapsed_time(t1)
+            counter = counter + 1
 
-    print "# Total time: %s" % elapsed_time(t0)
+        print "# Total time: %s" % elapsed_time(t0)
 
 
     
