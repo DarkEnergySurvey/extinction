@@ -11,11 +11,9 @@ DECam_filters = ('g_DECam','r_DECam','i_DECam','z_DECam','y_DECam')
 class coadd:
 
     def __init__(self,coadd_version='SVA1_COADD',
-                 db_section = "db-desoper",
-                 outdir = "color_tiles"):
+                 db_section = "db-desoper"):
         
         self.coadd_version = coadd_version
-        self.outdir        = outdir
 
         # Setup desar queries here for later
         try:
@@ -171,8 +169,7 @@ def cmdline():
     parser = argparse.ArgumentParser(description="Computes SFD98 Galactic extinction for COADD_OBJECTS, one tile at a time")
 
     # The positional arguments
-    #parser.add_argument("fileName", help="Fits file to process")
-    #parser.add_argument("outdir",   help="Path to output files [will preserve same name]")
+    # NONE
 
     # The optional arguments
     parser.add_argument("--TileName", action="store", default=None,
