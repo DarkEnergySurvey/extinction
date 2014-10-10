@@ -127,7 +127,7 @@ class sva1_coadd:
         Get the dust correction for current object in self.objectsRA, and seld.objectsDEC
         Return ndarray Xc[filter], Xc_err[filter]
         """
-        (self.Xc,self.Xc_err,self.eBV,self.l,self.b) = X.Xcorrection(self.objectsRA,self.objectsDEC,DECam_filters)
+        (self.Xc,self.Xc_err,self.eBV,self.l,self.b) = X.Xcorrection_SFD98(self.objectsRA,self.objectsDEC,DECam_filters)
 
     def InsertXCorr(self,table='felipe.sva1_coadd_objects_xcorr',tilename=None):
 

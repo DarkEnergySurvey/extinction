@@ -1,5 +1,5 @@
 import distutils
-from distutils.core import setup
+from distutils.core import setup 
 import glob
 
 sed_files = glob.glob("etc/SED/*.sed")
@@ -15,7 +15,7 @@ setup(name='extinction',
       author_email = "felipe@illinois.edu",
       packages = ['Xcorrect'],
       package_dir = {'': 'python'},
-      scripts = [('bin', bin_files)],
+      scripts = bin_files,
       data_files=[('etc/SED',   sed_files),
                   ('etc/FILTER',flt_files)]
      )

@@ -5,11 +5,6 @@ Set of python routines to perform galactic extintion correction
 Felipe Menanteau <felipe@illinois.edu>
 NCSA, Oct 2013
 
-$Id:$
-$Rev::                                  $:  
-$LastChangedBy::                        $:  
-$LastChangedDate::                      $:  
-
 """
 
 import os,sys
@@ -209,7 +204,7 @@ def flux(xsr,ys,yr):
     f_l = numpy.trapz(ys*yr,xsr)/norm
     return f_l
 
-def get_EBV(ra,dec,tmp_path='/tmp',units='degrees'):
+def get_EBV_SFD98(ra,dec,tmp_path='/tmp',units='degrees'):
 
     import types
 
@@ -302,7 +297,7 @@ def filterFactor(filter):
     return ffactors[filter]
 
 
-def Xcorrection(ra,dec,filters):
+def Xcorrection_SFD98(ra,dec,filters):
 
     import time
 
@@ -313,7 +308,7 @@ def Xcorrection(ra,dec,filters):
 
     t0 = time.time()
     print "# Computing e(B-V) using SFD98 for %s (ra,dec) positions" % len(ra)
-    (eBV,l,b) = get_EBV(ra,dec)
+    (eBV,l,b) = get_EBV_SFD98(ra,dec)
     print "# Done in:  %s" % elapsed_time(t0)
 
     # Check if list of filters

@@ -49,7 +49,7 @@ class coaddCatalog:
         Get the dust correction for current object in self.objectsRA, and seld.objectsDEC
         Return ndarray Xc[filter], Xc_err[filter]
         """
-        (self.Xc,self.Xc_err,self.eBV,self.l,self.b) = X.Xcorrection(self.ra,self.dec,DECam_filters)
+        (self.Xc,self.Xc_err,self.eBV,self.l,self.b) = X.Xcorrection_SFD98(self.ra,self.dec,DECam_filters)
 
     def writeTable(self):
 

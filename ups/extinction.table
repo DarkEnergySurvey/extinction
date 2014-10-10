@@ -1,5 +1,6 @@
-setupRequired(scipy)
-setupRequired(SF98dust)
+setupRequired(despyastro 0.1.0+0E)
+setupRequired(SFD98dust CodeC+0)
+setupRequired(CoreUtils 1.0.0+2)
 envAppend(PYTHONPATH, ${PRODUCT_DIR}/python)
 envAppend(PATH, ${PRODUCT_DIR}/bin)
 envSet(XCORRECT_PATH,${PRODUCT_DIR}/etc)
