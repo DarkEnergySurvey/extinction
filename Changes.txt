@@ -1,0 +1,11 @@
+version 1.0.0
+--------------
+
+- Now the SFD98 CodeC is part of a different module that it is loaded
+  via EUPS previously.
+
+- The functions in coords and tableio are now called from despyastro,
+  and are not carried anymore inside the python/ directory
+
+- bin/compute_SFD98_coadd_objects.py now creates/clobber the table
+  (input) before writing, if a tableName is given in the command line.
