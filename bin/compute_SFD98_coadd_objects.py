@@ -10,8 +10,7 @@ DECam_filters = ('g_DECam','r_DECam','i_DECam','z_DECam','y_DECam')
 
 class coadd:
 
-    def __init__(self,coadd_version='SVA1_COADD',
-                 db_section = "db-desoper"):
+    def __init__(self,coadd_version, db_section = "db-desoper"):
         
         self.coadd_version = coadd_version
 
@@ -118,7 +117,65 @@ class coadd:
         Get the dust correction for current object in self.objectsRA, and seld.objectsDEC
         Return ndarray Xc[filter], Xc_err[filter]
         """
-        (self.Xc,self.Xc_err,self.eBV,self.l,self.b) = X.Xcorrection(self.objectsRA,self.objectsDEC,DECam_filters)
+        (self.Xc,self.Xc_err,self.eBV,self.l,self.b) = X.Xcorrection_SFD98(self.objectsRA,self.objectsDEC,DECam_filters)
+
+
+    def createXCorrTable(self,table='felipe.coadd_objects_xcorr'):
+
+        t0 = time.time()
+        cur = self.dbh.cursor()
+
+        # make sure we delete before we created
+        drop = "drop table %s purge" % table
+
+        # Create command
+        create = """
+        create table %s (
+        COADD_OBJECTS_ID        NUMBER(11)  NOT NULL,
+        XCORR_SFD98_G           NUMBER(10,6),
+        XCORR_SFD98_R           NUMBER(10,6),
+        XCORR_SFD98_I           NUMBER(10,6),
+        XCORR_SFD98_Z           NUMBER(10,6),
+        XCORR_SFD98_Y           NUMBER(10,6),
+        eBV                     NUMBER(10,6),
+        L                       BINARY_FLOAT,
+        B                       BINARY_FLOAT,
+        TILENAME                VARCHAR2(20),
+        constraint %s_pk PRIMARY KEY (coadd_objects_id)
+        )"""  % (table,table.split(".")[1])
+
+
+        # -- Add description of columns
+        comments ="""comment on column %s.COADD_OBJECTS_ID is 'ID from COADD_OBJECTS table'
+        comment on column %s.XCORR_SFD98_G    is 'g-band Galactic extinction Correction from SFD98 and Rv=3.1'
+        comment on column %s.XCORR_SFD98_R    is 'r-band Galactic extinction Correction from SFD98 and Rv=3.1'
+        comment on column %s.XCORR_SFD98_I    is 'i-band extinction Correction from SFD98 and Rv=3.1'
+        comment on column %s.XCORR_SFD98_Z    is 'z-band extinction Correction from SFD98 and Rv=3.1'
+        comment on column %s.XCORR_SFD98_Y    is 'Y-band extinction Correction from SFD98 and Rv=3.1'
+        comment on column %s.eBV              is 'e(B-V) extinction'
+        comment on column %s.L                is 'Galactic Longitude'
+        comment on column %s.B                is 'Galactic Latitude'
+        comment on column %s.TILENAME         is 'DES parent tilename'""" 
+
+        print "# Will create new XCORR table: %s" % table
+        try:
+            print "# Dropping table: %s" % table
+            cur.execute(drop)
+        except:
+            print "# Could not drop table: %s -- probably doesn't exist" % table
+        print "# Creating table: %s" % table
+        cur.execute(create)
+
+        print "# Adding comments to: %s" % table
+        for comment in comments.split("\n"):
+            print comment % table
+            cur.execute(comment % table)
+
+        # Grand permission
+        grant = "grant select on %s to des_reader" % table.split(".")[1]
+        self.dbh.commit()
+        cur.close()
+        return
 
     def InsertXCorr(self,table='felipe.coadd_objects_xcorr'):
 
@@ -165,26 +222,44 @@ def elapsed_time(t1,verb=False):
 
 def cmdline():
 
+    description = """
+    Compute SFD98 Galactic extinction for COADD_OBJECTS table, one tile at a time using a TAG for a CoaddVersion.
+    """
+
+    usage = """
+
+    usage:
+    compute_SFD98_coadd_objects.py [-h] [--TileName TILENAME]
+                                      [--CreateTable]
+                                      CoaddVersion TableName
+    Examples:
+
+    # Compute for all tiles in Y1A1_COADD_STRIPE82, store in felipe.coadd_objects_xcorr and create the table
+    compute_SFD98_coadd_objects.py Y1A1_COADD_STRIPE82 felipe.coadd_objects_xcorr --CreateTable
+
+
+    # Compute only one tilename and store in felipe.coadd_objects_xcorr
+    compute_SFD98_coadd_objects.py Y1A1_COADD_STRIPE82 felipe.coadd_objects_xcorr --TileName DES2242-0041 
+
+    """
+    
     import argparse
-    parser = argparse.ArgumentParser(description="Computes SFD98 Galactic extinction for COADD_OBJECTS, one tile at a time")
+    parser = argparse.ArgumentParser(description=description, usage=usage)
 
     # The positional arguments
-    # NONE
+    parser.add_argument("CoaddVersion", action="store", default=None,
+                        help="DESAR TAGNAME to use (i.e. SVA1_COADD, Y1P1_COADD, Y1A1_COADD_STRIPE82)")
 
-    # The optional arguments
+    parser.add_argument("TableName", action="store", default=None,
+                        help="Table Name to store SFD98 Xcorrection information, (i.e. username.coadd_objects_xcorr)")
+
+    # The optional arguments    
     parser.add_argument("--TileName", action="store", default=None,
                         help="TileName to compute")
-    
-    parser.add_argument("--allTiles", action="store_true", default=False,
-                        help="Compute Extiction correction for all tilename at once [default=False]")
-
-    parser.add_argument("--CoaddVersion", action="store", default="SVA1_COADD",
-                        help="DESAR COADD_VERSION to use [default=SVA1_COADD]")
+    parser.add_argument("--CreateTable", action="store_true", default=False,
+                        help="Forces Creation of TableName and will clobber if exists")
 
     args = parser.parse_args()
-
-    if args.TileName:
-        args.allTiles = False
 
     return args
 
@@ -207,30 +282,31 @@ if __name__ == '__main__':
 
     # Do only one tile
     if args.TileName:
-        p.getRADEC_coaddtile_SQL(args.TileName)
-        p.getXCorr()
-        p.InsertXCorr()
-        print "# Total time: %s" % elapsed_time(t0)
-        sys.exit()
+        p.tilenames = [args.TileName]
+
+    # Create XCORR table
+    if args.CreateTable:
+        print "# Will create %s" % args.TableName
+        p.createXCorrTable(table=args.TableName)
 
     # Do them all
-    else:
-        ntiles  = len(p.tilenames)
-        counter = 1
-        # Make the list of files
-        for tilename in sorted(p.tilenames):
-            t1 = time.time()
-            now = time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime())
-            print "# --------------------------------------"
-            print "# Starting TILE:%s (%s/%s)" % (tilename,counter,ntiles)
-            print "# %s " % now
-            p.getRADEC_coaddtile_SQL(tilename)
-            p.getXCorr()
-            p.InsertXCorr()
-            print "# TILE Total time: %s" % elapsed_time(t1)
-            counter = counter + 1
+    ntiles  = len(p.tilenames)
+    counter = 1
+    # Make the list of files
 
-        print "# Total time: %s" % elapsed_time(t0)
+    for tilename in sorted(p.tilenames):
+        t1 = time.time()
+        now = time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime())
+        print "# --------------------------------------"
+        print "# Starting TILE:%s (%s/%s)" % (tilename,counter,ntiles)
+        print "# %s " % now
+        p.getRADEC_coaddtile_SQL(tilename)
+        p.getXCorr()
+        p.InsertXCorr(table=args.TableName)
+        print "# TILE Total time: %s" % elapsed_time(t1)
+        counter = counter + 1
+        
+    print "# Total time: %s" % elapsed_time(t0)
 
 
     
