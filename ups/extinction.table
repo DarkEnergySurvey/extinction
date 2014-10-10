@@ -1,4 +1,5 @@
-setupRequired(despyastro 0.1.0+0E)
+setupRequired(despyastro 0.1.0+0)
+setupRequierd(pyfits 3.0.8+15)
 setupRequired(SFD98dust CodeC+0)
 setupRequired(CoreUtils 1.0.0+2)
 envAppend(PYTHONPATH, ${PRODUCT_DIR}/python)

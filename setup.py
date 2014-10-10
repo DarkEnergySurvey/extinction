@@ -8,7 +8,7 @@ bin_files = glob.glob("bin/*.py") + glob.glob("bin/*.txt") + glob.glob("bin/*.sq
 
 # The main call
 setup(name='extinction',
-      version ='0.1.0',
+      version ='1.0.0',
       license = "GPL",
       description = "A Dust Extinction correction module for DESDM.",
       author = "Felipe Menanteau",
