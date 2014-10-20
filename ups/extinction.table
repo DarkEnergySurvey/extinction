@@ -1,0 +1,7 @@
+setupRequired(despyastro)
+setupRequierd(pyfits)
+setupRequired(SFD98dust)
+setupRequired(despydb)
+envAppend(PYTHONPATH, ${PRODUCT_DIR}/python)
+envAppend(PATH, ${PRODUCT_DIR}/bin)
+envSet(XCORRECT_PATH,${PRODUCT_DIR}/etc)

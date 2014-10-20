@@ -1,0 +1,22 @@
+version 1.0.0
+--------------
+
+- Now the SFD98 CodeC is part of a different module that it is loaded
+  via EUPS previously, now we have: setupRequired(SFD98dust CodeC+0)
+
+- the enviroment variable DUST_DIR is now set when loading SFD98dust,
+  however XCORRECT_PATH is still set by extinction at eups setup.
+
+- All of the fits files in the etc/maps folder have been removed. The
+  SED/FILETRS are still present in etc/
+
+- The functions in coords and tableio are now called from despyastro,
+  and are not carried anymore inside the python/ directory
+
+- bin/compute_SFD98_coadd_objects.py now creates/clobber the table
+  (input) before writing, if a tableName is given in the command line.
+
+version 1.0.1
+-------------
+
+- uses despydb instead of coreutils now
