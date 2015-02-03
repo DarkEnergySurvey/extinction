@@ -173,6 +173,7 @@ class coadd:
 
         # Grand permission
         grant = "grant select on %s to des_reader" % table.split(".")[1]
+        cur.execute(grant)
         self.dbh.commit()
         cur.close()
         return
