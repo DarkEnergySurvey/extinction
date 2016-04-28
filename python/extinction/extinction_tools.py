@@ -15,18 +15,23 @@ import numpy
 import tempfile
 import time
 from despymisc.miscutils import elapsed_time
+import extinction_utils
+import logging
+
+# Create a logger for all functions
+LOGGER = extinction_utils.create_logger(level=logging.NOTSET,name='SFD98')
 
 if not os.getenv('EXTINCTION_DIR'):
     vals = __file__.split('/')
     EXTINCTION_DIR = os.path.join("/".join(vals[:-3]),"etc")
 else:
     EXTINCTION_DIR = os.environ['EXTINCTION_DIR']
-print "# Setting up path:", EXTINCTION_DIR
+LOGGER.info("Setting up path: %s" % EXTINCTION_DIR)
+#print "Setting up path:", EXTINCTION_DIR
 
 # Set up path for SEDs and FILTERs
 FILTER_PATH   = os.path.join(EXTINCTION_DIR,"etc","FILTER")
 SED_PATH      = os.path.join(EXTINCTION_DIR,"etc","SED")
-#TMP_DIR = tempfile._get_default_tempdir()
 
 # Set up $DUST_DIR location
 if not os.getenv('DUST_DIR'):
@@ -51,8 +56,8 @@ def get_sednfilter(sed,filter,verb=False):
     filter_file = os.path.join(FILTER_PATH,"%s.res" % filter)
     sed_file    = os.path.join(SED_PATH,"%s.sed" % sed)
     if verb:
-        print "# Reading filter: %s "% filter_file
-        print "# Reading filter: %s "% sed_file
+        LOGGER.info("Reading filter: %s "% filter_file)
+        LOGGER.info("Reading filter: %s "% sed_file)
         
     x_res,y_res = tableio.get_data(filter_file,cols=(0,1))
     x_sed,y_sed = tableio.get_data(sed_file,cols=(0,1))
@@ -236,8 +241,8 @@ def get_EBV_SFD98(ra,dec,tmp_path=None,units='degrees'):
         coords_lb = os.path.join(tmp_path,"%s_coords_galac.dat" % name)
         eBVdata   = os.path.join(tmp_path,"%s_eBV.dat" % name)
 
-    print "# Will write temporary file: %s" % coords_lb
-    print "# Will write temporary file: %s" % eBVdata
+    LOGGER.info("Will write temporary file: %s" % coords_lb)
+    LOGGER.info("Will write temporary file: %s" % eBVdata)
 
     # Check if they are floats and make then ndarrays
     if type(ra) == types.FloatType or type(dec) == types.FloatType:
@@ -245,7 +250,8 @@ def get_EBV_SFD98(ra,dec,tmp_path=None,units='degrees'):
         dec = numpy.asarray(dec)
 
     if len(ra) != len(dec):
-        print "ERROR: RA,DEC must have same dimensions"
+        LOGGER.info("ERROR: RA,DEC must have same dimensions")
+        exit(1)
         return
 
     # Convert RA and  to l,b using Eric Sheldon's coords.py
@@ -272,9 +278,9 @@ def inpath(program,verb=None):
     """ Checks if program is in the user's path """
     for path in os.environ['PATH'].split(':'):
         if os.path.exists( os.path.join(path,program) ):
-            if verb: print "# program: %s found in: %s" % (program , os.path.join(path,program))
+            if verb: LOGGER.info("program: %s found in: %s" % (program , os.path.join(path,program)))
             return 1
-    if verb: print "# program: %s NOT found in user's path " % program
+    if verb: LOGGER.info("program: %s NOT found in user's path " % program)
     return 0
 
 
@@ -303,16 +309,15 @@ def filterFactor(filter):
 
 def Xcorrection_SFD98(ra,dec,filters,tmp_path=None,units='degrees'):
 
-
     """
     Gets e(B-V) for every source in the detection catalog for
     numpy arrays of ra and dec in degress and a set of filter/filters
     """
 
     t0 = time.time()
-    print "# Computing e(B-V) using SFD98 for %s (ra,dec) positions" % len(ra)
+    LOGGER.info("Computing e(B-V) using SFD98 for %s (ra,dec) positions" % len(ra))
     (eBV,l,b) = get_EBV_SFD98(ra,dec,tmp_path=tmp_path,units=units)
-    print "# Done in:  %s" % elapsed_time(t0)
+    LOGGER.info("Done in:  %s" % elapsed_time(t0))
 
     # Check if list of filters
     #if type(filters) is types.ListType or type(filters) is types.TupleType:
@@ -325,9 +330,9 @@ def Xcorrection_SFD98(ra,dec,filters,tmp_path=None,units='degrees'):
         XCorr[filter]    = filterFactor(filter) * eBV
         XCorrErr[filter] = XCorr[filter]*0.16
         # spit out some info
-        print "# Dust Correction %s, mean, min, max:  %.4f %.4f, %.4f mags" % (filter,
-                                                                               XCorr[filter].mean(),
-                                                                               XCorr[filter].min(),
-                                                                               XCorr[filter].max())
+        LOGGER.info("Dust Correction %s, mean, min, max:  %.4f %.4f, %.4f mags" % (filter,
+                                                                                   XCorr[filter].mean(),
+                                                                                   XCorr[filter].min(),
+                                                                                   XCorr[filter].max()))
     return XCorr, XCorrErr, eBV, l, b
 

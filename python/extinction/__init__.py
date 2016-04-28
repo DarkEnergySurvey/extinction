@@ -17,3 +17,5 @@ $LastChangedDate::                      $:  # Date of last commit.
 """
 
 from extinction_tools import *
+from extinction_utils import *
+
