@@ -12,6 +12,9 @@ from math import log10,sqrt
 from despyastro import tableio
 from despyastro import coords
 import numpy
+import tempfile
+import time
+from despymisc.miscutils import elapsed_time
 
 if not os.getenv('EXTINCTION_DIR'):
     vals = __file__.split('/')
@@ -23,6 +26,7 @@ print "# Setting up path:", EXTINCTION_DIR
 # Set up path for SEDs and FILTERs
 FILTER_PATH   = os.path.join(EXTINCTION_DIR,"etc","FILTER")
 SED_PATH      = os.path.join(EXTINCTION_DIR,"etc","SED")
+#TMP_DIR = tempfile._get_default_tempdir()
 
 # Set up $DUST_DIR location
 if not os.getenv('DUST_DIR'):
@@ -203,7 +207,7 @@ def flux(xsr,ys,yr):
     f_l = numpy.trapz(ys*yr,xsr)/norm
     return f_l
 
-def get_EBV_SFD98(ra,dec,tmp_path='/tmp',units='degrees'):
+def get_EBV_SFD98(ra,dec,tmp_path=None,units='degrees'):
 
     import types
 
@@ -223,8 +227,17 @@ def get_EBV_SFD98(ra,dec,tmp_path='/tmp',units='degrees'):
         sys.exit("Exiting -- dust_getval not found")
 
     # Set up location of temporary paths
-    coords_lb = os.path.join(tmp_path,"coords_galac.dat")
-    eBVdata   = os.path.join(tmp_path,"eBV.dat")
+    if not tmp_path:
+        tf = tempfile.NamedTemporaryFile()
+        coords_lb = "%s_coords_galac.dat" % tf.name
+        eBVdata   = "%s_eBV.dat" % tf.name
+    else:
+        name = next(tempfile._get_candidate_names())
+        coords_lb = os.path.join(tmp_path,"%s_coords_galac.dat" % name)
+        eBVdata   = os.path.join(tmp_path,"%s_eBV.dat" % name)
+
+    print "# Will write temporary file: %s" % coords_lb
+    print "# Will write temporary file: %s" % eBVdata
 
     # Check if they are floats and make then ndarrays
     if type(ra) == types.FloatType or type(dec) == types.FloatType:
@@ -264,14 +277,6 @@ def inpath(program,verb=None):
     if verb: print "# program: %s NOT found in user's path " % program
     return 0
 
-# Format time
-def elapsed_time(t1,verb=False):
-    import time
-    t2    = time.time()
-    stime = "%dm %2.2fs" % ( int( (t2-t1)/60.), (t2-t1) - 60*int((t2-t1)/60.))
-    if verb:
-        print >>sys.stderr,"Elapsed time: %s" % stime
-    return stime
 
 def filterFactor(filter):
 
@@ -296,9 +301,8 @@ def filterFactor(filter):
     return ffactors[filter]
 
 
-def Xcorrection_SFD98(ra,dec,filters):
+def Xcorrection_SFD98(ra,dec,filters,tmp_path=None,units='degrees'):
 
-    import time
 
     """
     Gets e(B-V) for every source in the detection catalog for
@@ -307,7 +311,7 @@ def Xcorrection_SFD98(ra,dec,filters):
 
     t0 = time.time()
     print "# Computing e(B-V) using SFD98 for %s (ra,dec) positions" % len(ra)
-    (eBV,l,b) = get_EBV_SFD98(ra,dec)
+    (eBV,l,b) = get_EBV_SFD98(ra,dec,tmp_path=tmp_path,units=units)
     print "# Done in:  %s" % elapsed_time(t0)
 
     # Check if list of filters
