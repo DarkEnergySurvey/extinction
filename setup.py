@@ -8,12 +8,12 @@ bin_files = glob.glob("bin/*.py") + glob.glob("bin/*.txt") + glob.glob("bin/*.sq
 
 # The main call
 setup(name='extinction',
-      version ='1.0.0',
+      version ='1.2.0',
       license = "GPL",
       description = "A Dust Extinction correction module for DESDM.",
       author = "Felipe Menanteau",
       author_email = "felipe@illinois.edu",
-      packages = ['Xcorrect'],
+      packages = ['extinction'],
       package_dir = {'': 'python'},
       scripts = bin_files,
       data_files=[('etc/SED',   sed_files),

@@ -6,11 +6,13 @@ To compute for all objects in: Y1P1_COADD
 %> compute_SFD98_coadd_objects.py --CoaddVersion Y1P1_COADD
 
 For one tile
-%> compute_SFD98_coadd_objects.py Y1P1_COADD --TileName DES2242-0041 --TableName felipe.coadd_objects_xcorr_test --CreateTable
+%> compute_SFD98_coadd_objects.py Y1P1_COADD --TileName DES2242-0041 --TableName felipe.coadd_objects_xcorr --CreateTable
 
 For all tiles in Y1A1_COADD_STRIPE82
-%> compute_SFD98_coadd_objects.py Y1A1_COADD_STRIPE82 --TableName felipe.coadd_objects_xcorr_test --CreateTable
+%> compute_SFD98_coadd_objects.py Y1A1_COADD_STRIPE82 --TableName felipe.coadd_objects_xcorr --CreateTable
 
+For all tiles in Y1A1_COADD_SPT
+%> compute_SFD98_coadd_objects.py Y1A1_COADD_SPT felipe.coadd_xcorr_Y1A1_COADD_SPT --CreateTable
 
 Compute extinction correction for catalogs fits table file
 -----------------------------------------------------------
