@@ -24,10 +24,9 @@ LOGGER = extinction_utils.create_logger(level=logging.NOTSET,name='SFD98')
 if not os.getenv('EXTINCTION_DIR'):
     vals = __file__.split('/')
     EXTINCTION_DIR = os.path.join("/".join(vals[:-3]),"etc")
+    LOGGER.debug("Setting up EXTINCTION_DIR path: %s" % EXTINCTION_DIR)
 else:
     EXTINCTION_DIR = os.environ['EXTINCTION_DIR']
-LOGGER.info("Setting up path: %s" % EXTINCTION_DIR)
-#print "Setting up path:", EXTINCTION_DIR
 
 # Set up path for SEDs and FILTERs
 FILTER_PATH   = os.path.join(EXTINCTION_DIR,"etc","FILTER")
@@ -36,7 +35,7 @@ SED_PATH      = os.path.join(EXTINCTION_DIR,"etc","SED")
 # Set up $DUST_DIR location
 if not os.getenv('DUST_DIR'):
     os.environ['DUST_DIR'] = os.path.join(EXTINCTION_DIR)
-    print "# Setting up $DUST_DIR to:",os.environ['DUST_DIR']
+    LOGGER.debug("Setting up $DUST_DIR to:",os.environ['DUST_DIR'])
 
 # Read in the FILTER response
 def get_filter(filter,verb=False):
