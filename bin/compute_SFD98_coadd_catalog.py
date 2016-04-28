@@ -3,7 +3,7 @@
 import os,sys
 import time
 import numpy
-import Xcorrect as X
+import extinction as X
 import pyfits
 
 DECam_filters = ('g_DECam','r_DECam','i_DECam','z_DECam','y_DECam')

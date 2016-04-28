@@ -1,5 +1,5 @@
 __author__  = "Felipe Menanteau"
-__version__ = '1.0.0'
+__version__ = '1.2.0'
 version = __version__
 
 """
@@ -16,4 +16,4 @@ $LastChangedDate::                      $:  # Date of last commit.
 
 """
 
-from Xcorrect import *
+from extinction_tools import *

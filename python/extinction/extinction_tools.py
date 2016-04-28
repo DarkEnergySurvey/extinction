@@ -13,21 +13,20 @@ from despyastro import tableio
 from despyastro import coords
 import numpy
 
-# Find the Path for Libraries files
-if not os.getenv('XCORRECT_PATH'):
+if not os.getenv('EXTINCTION_DIR'):
     vals = __file__.split('/')
-    XCORRECT_PATH = os.path.join("/".join(vals[:-3]),"etc")
+    EXTINCTION_DIR = os.path.join("/".join(vals[:-3]),"etc")
 else:
-    XCORRECT_PATH = os.getenv('XCORRECT_PATH')
-print "# Setting up path:", XCORRECT_PATH
+    EXTINCTION_DIR = os.environ['EXTINCTION_DIR']
+print "# Setting up path:", EXTINCTION_DIR
 
 # Set up path for SEDs and FILTERs
-FILTER_PATH   = os.path.join(XCORRECT_PATH,"FILTER")
-SED_PATH      = os.path.join(XCORRECT_PATH,"SED")
+FILTER_PATH   = os.path.join(EXTINCTION_DIR,"etc","FILTER")
+SED_PATH      = os.path.join(EXTINCTION_DIR,"etc","SED")
 
 # Set up $DUST_DIR location
 if not os.getenv('DUST_DIR'):
-    os.environ['DUST_DIR'] = os.path.join(XCORRECT_PATH)
+    os.environ['DUST_DIR'] = os.path.join(EXTINCTION_DIR)
     print "# Setting up $DUST_DIR to:",os.environ['DUST_DIR']
 
 # Read in the FILTER response
