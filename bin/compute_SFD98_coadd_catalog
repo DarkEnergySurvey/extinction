@@ -6,7 +6,6 @@ import numpy
 import extinction as X
 import fitsio
 from despymisc.miscutils import elapsed_time
-#from despymisc.miscutils import create_logger
 
 DECam_filters = ('g_DECam','r_DECam','i_DECam','z_DECam','y_DECam')
 
@@ -75,8 +74,7 @@ class coaddCatalog:
         xcorrdata['L']             = self.l
         xcorrdata['B']             = self.b
         self.logger.info("Writing %s" % self.OutName)
-        fitsio.write(self.OutName, xcorrdata, clobber=True)
-        
+        fitsio.write(self.OutName, xcorrdata, extname='OBJECTS',clobber=True)
 
 def cmdline():
 
