@@ -291,11 +291,21 @@ def filterFactor(filter):
     """
 
     ffactors = {
-        "g_DECam": 3.704722,
-        "r_DECam": 2.610357,
-        "i_DECam": 1.947345, 
-        "z_DECam": 1.496843,
-        "y_DECam": 1.311188,
+
+        # Older values from 02/2012
+        #"g_DECam": 3.704722,
+        #"r_DECam": 2.610357,
+        #"i_DECam": 1.947345, 
+        #"z_DECam": 1.496843,
+        #"y_DECam": 1.311188,
+
+        # values from 03/2013
+        "u_DECam": 4.708272,
+        "g_DECam": 3.682995,
+        "r_DECam": 2.604808,
+        "i_DECam": 1.940133, 
+        "z_DECam": 1.450496,
+        "y_DECam": 1.277421,
         
         "g_MOSAICII": 3.88489537829,
         "r_MOSAICII": 2.78438802442,

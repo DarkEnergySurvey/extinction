@@ -6,9 +6,8 @@ import numpy
 import extinction as X
 import fitsio
 from despymisc.miscutils import elapsed_time
-#from despymisc.miscutils import create_logger
 
-DECam_filters = ('g_DECam','r_DECam','i_DECam','z_DECam','y_DECam')
+DECam_filters = ('u_DECam','g_DECam','r_DECam','i_DECam','z_DECam','y_DECam')
 
 class coaddCatalog:
 
@@ -54,6 +53,7 @@ class coaddCatalog:
 
         # Names of the columns and dtypes
         dtypes = [('NUMBER','i4'),
+                  ('XCORR_SFD98_U','f8'),
                   ('XCORR_SFD98_G','f8'),
                   ('XCORR_SFD98_R','f8'),
                   ('XCORR_SFD98_I','f8'),
@@ -66,6 +66,7 @@ class coaddCatalog:
         nrows = len(self.NUMBER)
         xcorrdata = numpy.zeros(nrows, dtype=dtypes)
         xcorrdata['NUMBER']        = self.NUMBER
+        xcorrdata['XCORR_SFD98_U'] = self.Xc['u_DECam']
         xcorrdata['XCORR_SFD98_G'] = self.Xc['g_DECam']
         xcorrdata['XCORR_SFD98_R'] = self.Xc['r_DECam']
         xcorrdata['XCORR_SFD98_I'] = self.Xc['i_DECam']
@@ -75,8 +76,7 @@ class coaddCatalog:
         xcorrdata['L']             = self.l
         xcorrdata['B']             = self.b
         self.logger.info("Writing %s" % self.OutName)
-        fitsio.write(self.OutName, xcorrdata, clobber=True)
-        
+        fitsio.write(self.OutName, xcorrdata, extname='OBJECTS',clobber=True)
 
 def cmdline():
 

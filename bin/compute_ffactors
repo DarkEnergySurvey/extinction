@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 
 import os,sys
-import Xcorrect as X
+import extinction as X
 
-DECam_filters = ('g_DECam','r_DECam','i_DECam','z_DECam','y_DECam')
+
+#DECam_filters = ('g_DECam','r_DECam','i_DECam','z_DECam','y_DECam')
+DECam_filters = ('u_DECam','g_DECam','r_DECam','i_DECam','z_DECam','y_DECam')
 SDSS_filters  = ('g_SDSS','r_SDSS','i_SDSS','z_SDSS')
 sed = 'El_cww'
 Rv = 3.10
