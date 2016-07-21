@@ -55,11 +55,11 @@ class coaddCatalog:
         BAND = band.upper()
         # Names of the columns and dtypes
         dtypes = [('NUMBER','i4'),
-                  ('XCORR_SFD98_%s' % BAND,'f8')]
+                  ('XCORR_SFD98','f8')]
         nrows = len(self.NUMBER)
         xcorrdata = numpy.zeros(nrows, dtype=dtypes)
         xcorrdata['NUMBER']        = self.NUMBER
-        xcorrdata['XCORR_SFD98_%s' % BAND] = self.Xc['%s_DECam' % band]
+        xcorrdata['XCORR_SFD98'] = self.Xc['%s_DECam' % band]
         outname = "%s_%s_xcorr-cat.fits" % (self.prefix,band)
         self.logger.info("Writing %s" % outname)
 
@@ -71,14 +71,14 @@ class coaddCatalog:
     def writeTable_eBV(self):
         
         dtypes = [('NUMBER','i4'),
-                  ('eBV','f8'),
+                  ('EBV','f8'),
                   ('L','f8'),
                   ('B','f8')]
         
         nrows = len(self.NUMBER)
         xcorrdata = numpy.zeros(nrows, dtype=dtypes)
         xcorrdata['NUMBER']        = self.NUMBER
-        xcorrdata['eBV']           = self.eBV
+        xcorrdata['EBV']           = self.eBV
         xcorrdata['L']             = self.l
         xcorrdata['B']             = self.b
         outname = "%s_ebv-cat.fits" % self.prefix
