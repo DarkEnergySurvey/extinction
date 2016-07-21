@@ -306,6 +306,7 @@ def filterFactor(filter):
         "i_DECam": 1.940133, 
         "z_DECam": 1.450496,
         "y_DECam": 1.277421,
+        "Y_DECam": 1.277421,
         
         "g_MOSAICII": 3.88489537829,
         "r_MOSAICII": 2.78438802442,
