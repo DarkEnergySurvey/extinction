@@ -110,6 +110,15 @@ def cmdline():
 
     return args
 
+def parse_comma_separated_list(inputlist):
+
+    # To make it work with wcl coma-separated lists
+
+    if inputlist[0].find(',') >= 0:
+        return inputlist[0].split(',')
+    else:
+        return inputlist
+    
 ######################
 # Call the procedure
 ######################
@@ -121,6 +130,9 @@ if __name__ == '__main__':
 
     # Get the command line options
     args = cmdline()
+
+    args.bands = parse_comma_separated_list(args.bands)
+
 
     # Make the object
     p = coaddCatalog(args.CatName,args.prefix,args.columns,args.tmpdir)
