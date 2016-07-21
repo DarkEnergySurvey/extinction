@@ -11,10 +11,10 @@ DECam_filters = ('u_DECam','g_DECam','r_DECam','i_DECam','z_DECam','Y_DECam')
 
 class coaddCatalog:
 
-    def __init__(self,CatName,OutName,columns,tmpdir=None,logger=None):
+    def __init__(self,CatName,prefix,columns,tmpdir=None,logger=None):
 
         self.CatName = CatName
-        self.OutName = OutName
+        self.prefix = prefix
         self.columns = columns
         self.tmpdir  = tmpdir
         self.logger  = logger
@@ -49,34 +49,69 @@ class coaddCatalog:
         """
         (self.Xc,self.Xc_err,self.eBV,self.l,self.b) = X.Xcorrection_SFD98(self.ra,self.dec,DECam_filters,tmp_path=self.tmpdir)
 
-    def writeTable(self):
+        
 
+    # def writeTable(self):
+    #
+    #     # Names of the columns and dtypes
+    #     dtypes = [('NUMBER','i4'),
+    #               ('XCORR_SFD98_U','f8'),
+    #               ('XCORR_SFD98_G','f8'),
+    #               ('XCORR_SFD98_R','f8'),
+    #               ('XCORR_SFD98_I','f8'),
+    #               ('XCORR_SFD98_Z','f8'),
+    #               ('XCORR_SFD98_Y','f8'),
+    #               ('eBV','f8'),
+    #               ('L','f8'),
+    #               ('B','f8')]
+    #
+    #     nrows = len(self.NUMBER)
+    #     xcorrdata = numpy.zeros(nrows, dtype=dtypes)
+    #     xcorrdata['NUMBER']        = self.NUMBER
+    #     xcorrdata['XCORR_SFD98_U'] = self.Xc['u_DECam']
+    #     xcorrdata['XCORR_SFD98_G'] = self.Xc['g_DECam']
+    #     xcorrdata['XCORR_SFD98_R'] = self.Xc['r_DECam']
+    #     xcorrdata['XCORR_SFD98_I'] = self.Xc['i_DECam']
+    #     xcorrdata['XCORR_SFD98_Z'] = self.Xc['z_DECam']
+    #     xcorrdata['XCORR_SFD98_Y'] = self.Xc['y_DECam']
+    #     xcorrdata['eBV']           = self.eBV
+    #     xcorrdata['L']             = self.l
+    #     xcorrdata['B']             = self.b
+    #     self.logger.info("Writing %s" % self.OutName)
+    #     fitsio.write(self.OutName, xcorrdata, extname='OBJECTS',clobber=True)
+
+
+    def writeTable_band(self,band):
+
+        BAND = band.upper()
         # Names of the columns and dtypes
         dtypes = [('NUMBER','i4'),
-                  ('XCORR_SFD98_U','f8'),
-                  ('XCORR_SFD98_G','f8'),
-                  ('XCORR_SFD98_R','f8'),
-                  ('XCORR_SFD98_I','f8'),
-                  ('XCORR_SFD98_Z','f8'),
-                  ('XCORR_SFD98_Y','f8'),
-                  ('eBV','f8'),
-                  ('L','f8'),
-                  ('B','f8')]
-
+                  ('XCORR_SFD98_%s' % BAND,'f8')]
         nrows = len(self.NUMBER)
         xcorrdata = numpy.zeros(nrows, dtype=dtypes)
         xcorrdata['NUMBER']        = self.NUMBER
-        xcorrdata['XCORR_SFD98_U'] = self.Xc['u_DECam']
-        xcorrdata['XCORR_SFD98_G'] = self.Xc['g_DECam']
-        xcorrdata['XCORR_SFD98_R'] = self.Xc['r_DECam']
-        xcorrdata['XCORR_SFD98_I'] = self.Xc['i_DECam']
-        xcorrdata['XCORR_SFD98_Z'] = self.Xc['z_DECam']
-        xcorrdata['XCORR_SFD98_Y'] = self.Xc['Y_DECam']
+        xcorrdata['XCORR_SFD98_%s' % BAND] = self.Xc['%s_DECam' % band]
+        outname = "%s_%s_xcorr-cat.fits" % (self.prefix,band)
+        self.logger.info("Writing %s" % outname)
+        fitsio.write(outname, xcorrdata, extname='OBJECTS',clobber=True)
+
+
+    def writeTable_eBV(self):
+        
+        dtypes = [('NUMBER','i4'),
+                  ('eBV','f8'),
+                  ('L','f8'),
+                  ('B','f8')]
+        
+        nrows = len(self.NUMBER)
+        xcorrdata = numpy.zeros(nrows, dtype=dtypes)
+        xcorrdata['NUMBER']        = self.NUMBER
         xcorrdata['eBV']           = self.eBV
         xcorrdata['L']             = self.l
         xcorrdata['B']             = self.b
-        self.logger.info("Writing %s" % self.OutName)
-        fitsio.write(self.OutName, xcorrdata, extname='OBJECTS',clobber=True)
+        outname = "%s_ebv-cat.fits" % self.prefix
+        self.logger.info("Writing %s" % outname)
+        fitsio.write(outname, xcorrdata, extname='OBJECTS',clobber=True)
 
 def cmdline():
 
@@ -86,14 +121,17 @@ def cmdline():
     # The optional arguments
     parser.add_argument("-i","--CatName", action="store", default=None, required=True,
                         help="Input Catalog Name")
-    parser.add_argument("-o","--OutName", action="store", default=None, required=True,
-                        help="Output Dust Correction")
+    parser.add_argument("--prefix", action="store", default=None, required=True,
+                        help="Output Prefix for Dust Correction files")
     parser.add_argument("-c", "--columns", type=str, action="store",
                         default="NUMBER,ALPHAWIN_J2000,DELTAWIN_J2000",
                         help="The name of the 3 columns used separated by comas, \
                         e.g.: NUMBER,RA,DEC, default=NUMBER,ALPHAWIN_J2000,DELTAWIN_J2000")
     parser.add_argument("--tmpdir", action="store",default=None,
                         help="Overrive system defauls tempdir location")
+    parser.add_argument("--bands", action="store",nargs='+', default=['g','r','i','z','Y'],
+                        help="Compute extinction for specific set of bands")
+
     args = parser.parse_args()
 
     return args
@@ -111,11 +149,13 @@ if __name__ == '__main__':
     args = cmdline()
 
     # Make the object
-    p = coaddCatalog(args.CatName,args.OutName,args.columns,args.tmpdir)
+    p = coaddCatalog(args.CatName,args.prefix,args.columns,args.tmpdir)
     p.readCat()
     p.getXCorr()
-    p.writeTable()
 
+    for band in args.bands:
+        p.writeTable_band(band)
+    p.writeTable_eBV()
     p.logger.info("Total time: %s" % elapsed_time(t0))
 
     
