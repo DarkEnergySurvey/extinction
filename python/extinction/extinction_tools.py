@@ -129,7 +129,7 @@ def compute_AEBV(filter='r_SDSS',sed='flat',Rv=3.1):
     return A_AV, A_EBV,  A_EBV/A_AV
 
 # Compute A(lambda)/A(V) using the prescription from Cardelli, Clayton
-# & Mathis (1998) updated in the optical-NIR using O'Donnell (1994).
+# & Mathis (1989) updated in the optical-NIR using O'Donnell (1994).
 def AAV_ccm(wavelength,Rv=3.1):
 
     land = numpy.logical_and
@@ -159,7 +159,7 @@ def AAV_ccm(wavelength,Rv=3.1):
     Nsel = len(ix[0])
     if Nsel > 0:
         y = x[ix] - 1.82
-        # Carelli fit
+        # Cardelli fit
         a[ix] = 1.0 + 0.17699*y - 0.50447*y**2 - 0.02427*y**3 + 0.72085*y**4 + 0.01979*y**5 - 0.77530*y**6 + 0.32999*y**7
         b[ix] = 1.41338*y + 2.28305*y**2 + 1.07233*y**3 - 5.38434*y**4 - 0.62251*y**5 + 5.30260*y**6 - 2.09002*y**7
         # O'Donnell fit
@@ -292,14 +292,17 @@ def filterFactor(filter):
 
     ffactors = {
 
-        # Older values from 02/2012
+        # Older values from filter curves generated in 02/2012 
+        # These filter curves can be found in etc/FILTER/DES_filters
+        # Applied to data before 06/2016
         #"g_DECam": 3.704722,
         #"r_DECam": 2.610357,
         #"i_DECam": 1.947345, 
         #"z_DECam": 1.496843,
         #"y_DECam": 1.311188,
 
-        # values from 03/2013
+        # Values from filter curves generated in 03/2013
+        # These filter curves can be found in etc/FILTER/DES_filters_v2
         "u_DECam": 4.708272,
         "g_DECam": 3.682995,
         "r_DECam": 2.604808,
