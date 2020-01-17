@@ -1,23 +1,22 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-import os,sys
 import time
 import numpy
-import extinction as X
 import fitsio
+import extinction as X
 from despymisc.miscutils import elapsed_time
 
-DECam_filters = ('u_DECam','g_DECam','r_DECam','i_DECam','z_DECam','Y_DECam')
+DECam_filters = ('u_DECam', 'g_DECam', 'r_DECam', 'i_DECam', 'z_DECam', 'Y_DECam')
 
 class coaddCatalog:
 
-    def __init__(self,CatName,OutName,columns,tmpdir=None,logger=None):
+    def __init__(self, CatName, OutName, columns, tmpdir=None, logger=None):
 
         self.CatName = CatName
         self.OutName = OutName
         self.columns = columns
-        self.tmpdir  = tmpdir
-        self.logger  = logger
+        self.tmpdir = tmpdir
+        self.logger = logger
         if not self.logger:
             self.logger = X.create_logger(name='SFD98')
 
@@ -26,57 +25,59 @@ class coaddCatalog:
 
         """ Read in the SExtractor Coadd Catalog"""
 
-        self.logger.info("Reading: %s" % self.CatName)
+        self.logger.info("Reading: %s", self.CatName)
 
         # Extract column names and make them upper case
         index_col, ra_col, dec_col = "".join(self.columns.split()).split(',')
         index_col = index_col.upper()
-        ra_col    = ra_col.upper()
-        dec_col   = dec_col.upper()
-        self.logger.info("Using %s,%s for RA,DEC" % (ra_col,dec_col))
+        ra_col = ra_col.upper()
+        dec_col = dec_col.upper()
+        self.logger.info("Using %s,%s for RA,DEC", ra_col, dec_col)
 
         # Read in columns from input data using fitsio
         catdata = fitsio.read(self.CatName, columns=[index_col, ra_col, dec_col])
-        self.NUMBER   = catdata[index_col]
-        self.ra       = catdata[ra_col]
-        self.dec      = catdata[dec_col]
-        
+        self.NUMBER = catdata[index_col]
+        self.ra = catdata[ra_col]
+        self.dec = catdata[dec_col]
+
     def getXCorr(self):
 
         """
         Get the dust correction for current object in self.objectsRA, and seld.objectsDEC
         Return ndarray Xc[filter], Xc_err[filter]
         """
-        (self.Xc,self.Xc_err,self.eBV,self.l,self.b) = X.Xcorrection_SFD98(self.ra,self.dec,DECam_filters,tmp_path=self.tmpdir)
+        (self.Xc, self.Xc_err, self.eBV, self.l, self.b) = X.Xcorrection_SFD98(self.ra, self.dec,
+                                                                               DECam_filters,
+                                                                               tmp_path=self.tmpdir)
 
     def writeTable(self):
 
         # Names of the columns and dtypes
-        dtypes = [('NUMBER','i4'),
-                  ('XCORR_SFD98_U','f8'),
-                  ('XCORR_SFD98_G','f8'),
-                  ('XCORR_SFD98_R','f8'),
-                  ('XCORR_SFD98_I','f8'),
-                  ('XCORR_SFD98_Z','f8'),
-                  ('XCORR_SFD98_Y','f8'),
-                  ('eBV','f8'),
-                  ('L','f8'),
-                  ('B','f8')]
+        dtypes = [('NUMBER', 'i4'),
+                  ('XCORR_SFD98_U', 'f8'),
+                  ('XCORR_SFD98_G', 'f8'),
+                  ('XCORR_SFD98_R', 'f8'),
+                  ('XCORR_SFD98_I', 'f8'),
+                  ('XCORR_SFD98_Z', 'f8'),
+                  ('XCORR_SFD98_Y', 'f8'),
+                  ('eBV', 'f8'),
+                  ('L', 'f8'),
+                  ('B', 'f8')]
 
         nrows = len(self.NUMBER)
         xcorrdata = numpy.zeros(nrows, dtype=dtypes)
-        xcorrdata['NUMBER']        = self.NUMBER
+        xcorrdata['NUMBER'] = self.NUMBER
         xcorrdata['XCORR_SFD98_U'] = self.Xc['u_DECam']
         xcorrdata['XCORR_SFD98_G'] = self.Xc['g_DECam']
         xcorrdata['XCORR_SFD98_R'] = self.Xc['r_DECam']
         xcorrdata['XCORR_SFD98_I'] = self.Xc['i_DECam']
         xcorrdata['XCORR_SFD98_Z'] = self.Xc['z_DECam']
         xcorrdata['XCORR_SFD98_Y'] = self.Xc['Y_DECam']
-        xcorrdata['eBV']           = self.eBV
-        xcorrdata['L']             = self.l
-        xcorrdata['B']             = self.b
-        self.logger.info("Writing %s" % self.OutName)
-        fitsio.write(self.OutName, xcorrdata, extname='OBJECTS',clobber=True)
+        xcorrdata['eBV'] = self.eBV
+        xcorrdata['L'] = self.l
+        xcorrdata['B'] = self.b
+        self.logger.info("Writing %s", self.OutName)
+        fitsio.write(self.OutName, xcorrdata, extname='OBJECTS', clobber=True)
 
 def cmdline():
 
@@ -84,15 +85,15 @@ def cmdline():
     parser = argparse.ArgumentParser(description="Computes SFD98 Galactic extinction from a SExtractor file")
 
     # The optional arguments
-    parser.add_argument("-i","--CatName", action="store", default=None, required=True,
+    parser.add_argument("-i", "--CatName", action="store", default=None, required=True,
                         help="Input Catalog Name")
-    parser.add_argument("-o","--OutName", action="store", default=None, required=True,
+    parser.add_argument("-o", "--OutName", action="store", default=None, required=True,
                         help="Output Dust Correction")
     parser.add_argument("-c", "--columns", type=str, action="store",
                         default="NUMBER,ALPHAWIN_J2000,DELTAWIN_J2000",
-                        help="The name of the 3 columns used separated by comas, \
-                        e.g.: NUMBER,RA,DEC, default=NUMBER,ALPHAWIN_J2000,DELTAWIN_J2000")
-    parser.add_argument("--tmpdir", action="store",default=None,
+                        help="The name of the 3 columns used separated by comas, " \
+                        "e.g.: NUMBER,RA,DEC, default=NUMBER,ALPHAWIN_J2000,DELTAWIN_J2000")
+    parser.add_argument("--tmpdir", action="store", default=None,
                         help="Overrive system defauls tempdir location")
     args = parser.parse_args()
 
@@ -105,17 +106,15 @@ if __name__ == '__main__':
 
     t0 = time.time()
     # The start time
-    tstart   = time.time()
+    tstart = time.time()
 
     # Get the command line options
     args = cmdline()
 
     # Make the object
-    p = coaddCatalog(args.CatName,args.OutName,args.columns,args.tmpdir)
+    p = coaddCatalog(args.CatName, args.OutName, args.columns, args.tmpdir)
     p.readCat()
     p.getXCorr()
     p.writeTable()
 
-    p.logger.info("Total time: %s" % elapsed_time(t0))
-
-    
+    p.logger.info("Total time: %s", elapsed_time(t0))

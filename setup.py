@@ -19,7 +19,8 @@ setup(name='extinction',
       scripts = bin_files,
       data_files=[('etc/SED',   sed_files),
                   ('etc/FILTER',flt_files),
-                  ('etc',   sql_files)]
+                  ('etc',   sql_files),
+                  ('ups', ['ups/extinction.table']),]
       )
 
 
