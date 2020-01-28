@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import os,sys
 
@@ -10,7 +10,7 @@ header = "# %s DEcam filter response from: https://cdcvs.fnal.gov/redmine/attach
 
 for filter in filters:
     #fname   = 'DES%s-FullSize-woptics-watmos.par' % filter
-    fname   = '20130322_%s.dat' % filter    
+    fname   = '20130322_%s.dat' % filter
     resname = '%s_DECam.res' % filter
     res = open(resname,"w")
 
@@ -26,7 +26,7 @@ for filter in filters:
         tran = float(vals[1])
         if tran < 0:
             tran = 0
-        
+
         res.write("%8.1f %9.6f\n" % (wave,tran))
-    print "# Wrote %s" % resname
+    print("# Wrote %s" % resname)
     res.close()

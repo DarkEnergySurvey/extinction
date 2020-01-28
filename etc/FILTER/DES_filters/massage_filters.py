@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import os,sys
 import tableio
@@ -8,7 +8,7 @@ filters = ('g','r','i','z','y')
 header = """# %s DECam filter response from David James\n"""
 
 for filter in filters:
-    fname   = 'DES%s-FullSize-woptics-watmos.par' % filter    
+    fname   = 'DES%s-FullSize-woptics-watmos.par' % filter
     resname = '%s_DECam.res' % filter
     res = open(resname,"w")
 
@@ -24,7 +24,7 @@ for filter in filters:
         tran = float(vals[7])
         if tran < 0:
             tran = 0
-        
+
         res.write("%8.1f %8.5f\n" % (wave,tran))
-    print "# Wrote %s" % resname
+    print("# Wrote %s" % resname)
     res.close()
