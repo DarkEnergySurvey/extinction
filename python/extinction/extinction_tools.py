@@ -249,7 +249,7 @@ def get_EBV_SFD98(ra, dec, tmp_path=None, units='degrees'):
     # Convert RA and  to l,b using Eric Sheldon's coords.py
     # Write out a coords.dat file
     (l, b) = coords.eq2gal(ra, dec, b1950=False, dtype='f8')
-    tableio.put_data(coords_lb, (l, b), fmt="%12.8f %12.8f")
+    tableio.put_data(coords_lb, (l, b), fmt='{:12.8f} '*2)
 
     # ok, we have l and b. now onto the extinction stuff. build the dust_val command line
     cmd = "dust_getval infile=%s outfile=%s verbose=n interp=y" % (coords_lb, eBVdata)
