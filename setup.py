@@ -9,7 +9,7 @@ bin_files = glob.glob("bin/compute_*") + glob.glob("bin/*.txt")
 
 # The main call
 setup(name='extinction',
-      version ='3.0.0',
+      version ='3.0.1',
       license = "GPL",
       description = "A Dust Extinction correction module for DESDM.",
       author = "Felipe Menanteau",
