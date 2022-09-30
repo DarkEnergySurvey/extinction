@@ -9,7 +9,7 @@ bin_files = glob.glob("bin/compute_*") + glob.glob("bin/*.txt")
 
 # The main call
 setup(name='extinction',
-      version ='3.0.1',
+      version ='3.0.2',
       license = "GPL",
       description = "A Dust Extinction correction module for DESDM.",
       author = "Felipe Menanteau",
@@ -22,8 +22,3 @@ setup(name='extinction',
                   ('etc',   sql_files),
                   ('ups', ['ups/extinction.table']),]
       )
-
-
-
-
-
