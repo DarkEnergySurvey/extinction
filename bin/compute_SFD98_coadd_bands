@@ -6,7 +6,7 @@ import fitsio
 import extinction as X
 from despymisc.miscutils import elapsed_time
 
-DECam_filters = ('u_DECam', 'g_DECam', 'r_DECam', 'i_DECam', 'z_DECam', 'Y_DECam')
+DECam_filters = ('u_DECam', 'g_DECam', 'r_DECam', 'i_DECam', 'z_DECam', 'Y_DECam', 'VY_VISTA', 'J_VISTA', 'H_VISTA', 'Ks_VISTA')
 
 class coaddCatalog:
 
@@ -61,7 +61,10 @@ class coaddCatalog:
         nrows = len(self.NUMBER)
         xcorrdata = numpy.zeros(nrows, dtype=dtypes)
         xcorrdata['NUMBER'] = self.NUMBER
-        xcorrdata['XCORR_SFD98'] = self.Xc['%s_DECam' % band]
+        if (band in ['VY','J','H','Ks']):
+            xcorrdata['XCORR_SFD98'] = self.Xc['%s_VISTA' % band]
+        else:
+            xcorrdata['XCORR_SFD98'] = self.Xc['%s_DECam' % band]
         outname = "%s_%s_xcorr-cat.fits" % (self.prefix, band)
         self.logger.info("Writing %s" % outname)
 
