@@ -303,6 +303,12 @@ def filterFactor(filter):
         "y_DECam": 1.277421,
         "Y_DECam": 1.277421,
 
+        # Values for VISTA filters (RAG added 09/2022)
+        "VY_VISTA": 1.214631,
+        "J_VISTA":  0.875079,
+        "H_VISTA":  0.565934,
+        "Ks_VISTA": 0.366106,
+
         "g_MOSAICII": 3.88489537829,
         "r_MOSAICII": 2.78438802442,
         "i_MOSAICII": 2.06519949822,

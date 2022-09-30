@@ -6,7 +6,7 @@ import fitsio
 import extinction as X
 from despymisc.miscutils import elapsed_time
 
-DECam_filters = ('u_DECam', 'g_DECam', 'r_DECam', 'i_DECam', 'z_DECam', 'Y_DECam')
+DECam_filters = ('u_DECam', 'g_DECam', 'r_DECam', 'i_DECam', 'z_DECam', 'Y_DECam', 'VY_VISTA', 'J_VISTA', 'H_VISTA', 'Ks_VISTA')
 
 class coaddCatalog:
 
@@ -53,16 +53,32 @@ class coaddCatalog:
     def writeTable(self):
 
         # Names of the columns and dtypes
-        dtypes = [('NUMBER', 'i4'),
-                  ('XCORR_SFD98_U', 'f8'),
-                  ('XCORR_SFD98_G', 'f8'),
-                  ('XCORR_SFD98_R', 'f8'),
-                  ('XCORR_SFD98_I', 'f8'),
-                  ('XCORR_SFD98_Z', 'f8'),
-                  ('XCORR_SFD98_Y', 'f8'),
-                  ('eBV', 'f8'),
-                  ('L', 'f8'),
-                  ('B', 'f8')]
+        if (args.nir):
+            dtypes = [('NUMBER', 'i4'),
+                      ('XCORR_SFD98_U', 'f8'),
+                      ('XCORR_SFD98_G', 'f8'),
+                      ('XCORR_SFD98_R', 'f8'),
+                      ('XCORR_SFD98_I', 'f8'),
+                      ('XCORR_SFD98_Z', 'f8'),
+                      ('XCORR_SFD98_Y', 'f8'),
+                      ('XCORR_SFD98_VY', 'f8'),
+                      ('XCORR_SFD98_J', 'f8'),
+                      ('XCORR_SFD98_H', 'f8'),
+                      ('XCORR_SFD98_Ks', 'f8'),
+                      ('eBV', 'f8'),
+                      ('L', 'f8'),
+                      ('B', 'f8')]
+        else:
+            dtypes = [('NUMBER', 'i4'),
+                      ('XCORR_SFD98_U', 'f8'),
+                      ('XCORR_SFD98_G', 'f8'),
+                      ('XCORR_SFD98_R', 'f8'),
+                      ('XCORR_SFD98_I', 'f8'),
+                      ('XCORR_SFD98_Z', 'f8'),
+                      ('XCORR_SFD98_Y', 'f8'),
+                      ('eBV', 'f8'),
+                      ('L', 'f8'),
+                      ('B', 'f8')]
 
         nrows = len(self.NUMBER)
         xcorrdata = numpy.zeros(nrows, dtype=dtypes)
@@ -73,6 +89,11 @@ class coaddCatalog:
         xcorrdata['XCORR_SFD98_I'] = self.Xc['i_DECam']
         xcorrdata['XCORR_SFD98_Z'] = self.Xc['z_DECam']
         xcorrdata['XCORR_SFD98_Y'] = self.Xc['Y_DECam']
+        if (args.nir):
+            xcorrdata['XCORR_SFD98_VY'] = self.Xc['VY_VISTA']
+            xcorrdata['XCORR_SFD98_J']  = self.Xc['J_VISTA']
+            xcorrdata['XCORR_SFD98_H']  = self.Xc['H_VISTA']
+            xcorrdata['XCORR_SFD98_Ks'] = self.Xc['Ks_VISTA']
         xcorrdata['eBV'] = self.eBV
         xcorrdata['L'] = self.l
         xcorrdata['B'] = self.b
@@ -95,6 +116,8 @@ def cmdline():
                         "e.g.: NUMBER,RA,DEC, default=NUMBER,ALPHAWIN_J2000,DELTAWIN_J2000")
     parser.add_argument("--tmpdir", action="store", default=None,
                         help="Overrive system defauls tempdir location")
+    parser.add_argument("--nir", action="store_true", default=False, 
+                        help="Flag to include VISTA NIR filter values")
     args = parser.parse_args()
 
     return args
